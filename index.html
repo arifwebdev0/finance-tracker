@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A responsive personal finance tracker built with HTML, CSS and JavaScript.">
+  <title>SpendWise — Personal Finance Tracker</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <span class="brand-icon">🌿</span>
+        <span>SpendWise</span>
+      </div>
+
+      <nav class="sidebar-nav" aria-label="Main navigation">
+        <button class="nav-link active" data-section="dashboard">🏠 <span>Dashboard</span></button>
+        <button class="nav-link" data-section="transactions">🧾 <span>Transactions</span></button>
+        <button class="nav-link" data-section="budget">🎯 <span>Budget</span></button>
+        <button class="nav-link" data-section="converter">💱 <span>Currency Converter</span></button>
+      </nav>
+
+      <div class="sidebar-tip">
+        <p>“Small steps make big changes.”</p>
+      </div>
+    </aside>
+
+    <div class="main-area">
+      <header class="topbar">
+        <button class="icon-btn mobile-menu" id="menuBtn" aria-label="Open menu">☰</button>
+        <div class="breadcrumb" id="pageTitle">Dashboard</div>
+
+        <div class="topbar-actions">
+          <button class="theme-toggle" id="themeBtn" aria-label="Toggle theme">☀️ <span>Theme</span></button>
+          <button class="icon-btn" id="quickAddBtn" aria-label="Add transaction">＋</button>
+        </div>
+      </header>
+
+      <main class="content">
+        <!-- DASHBOARD -->
+        <section class="page-section active" id="dashboard">
+          <div class="welcome-row">
+            <div>
+              <h1>Good day! 👋</h1>
+              <p>Here’s your financial overview.</p>
+            </div>
+            <span class="date-text" id="todayText"></span>
+          </div>
+
+          <div class="stats-grid">
+            <article class="stat-card balance-card">
+              <div class="stat-icon">💰</div>
+              <div>
+                <p>Total Balance</p>
+                <h2 id="balanceValue">₹0</h2>
+              </div>
+            </article>
+
+            <article class="stat-card income-card">
+              <div class="stat-icon">↗</div>
+              <div>
+                <p>Total Income</p>
+                <h2 id="incomeValue">₹0</h2>
+              </div>
+            </article>
+
+            <article class="stat-card expense-card">
+              <div class="stat-icon">↘</div>
+              <div>
+                <p>Total Expenses</p>
+                <h2 id="expenseValue">₹0</h2>
+              </div>
+            </article>
+
+            <article class="stat-card budget-card">
+              <div class="stat-icon">🎯</div>
+              <div class="stat-content">
+                <p>Monthly Budget</p>
+                <h2 id="budgetValue">₹0</h2>
+                <div class="progress-track"><div class="progress-fill" id="budgetProgress"></div></div>
+                <small id="budgetMeta">Set a budget to start tracking.</small>
+              </div>
+            </article>
+          </div>
+
+          <div class="dashboard-grid">
+            <article class="panel form-panel">
+              <div class="panel-header">
+                <div>
+                  <h2 id="formTitle">Add New Transaction</h2>
+                  <p>Record your income or expense.</p>
+                </div>
+              </div>
+
+              <form id="transactionForm">
+                <input type="hidden" id="transactionId">
+
+                <div class="type-switch">
+                  <button type="button" class="type-btn active" data-type="expense">Expense</button>
+                  <button type="button" class="type-btn" data-type="income">Income</button>
+                </div>
+
+                <div class="form-group">
+                  <label for="title">Title</label>
+                  <input id="title" type="text" placeholder="e.g. Grocery" maxlength="50" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="amount">Amount</label>
+                  <input id="amount" type="number" min="0.01" step="0.01" placeholder="e.g. 500" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="category">Category</label>
+                  <select id="category" required>
+                    <option value="">Select category</option>
+                    <option>Food</option>
+                    <option>Shopping</option>
+                    <option>Bills</option>
+                    <option>Transport</option>
+                    <option>Entertainment</option>
+                    <option>Health</option>
+                    <option>Education</option>
+                    <option>Salary</option>
+                    <option>Freelance</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="date">Date</label>
+                  <input id="date" type="date" required>
+                </div>
+
+                <div class="form-actions">
+                  <button class="primary-btn" type="submit" id="submitBtn">＋ Add Transaction</button>
+                  <button class="secondary-btn hidden" type="button" id="cancelEditBtn">Cancel</button>
+                </div>
+                <p class="form-error" id="formError" role="alert"></p>
+              </form>
+            </article>
+
+            <article class="panel">
+              <div class="panel-header">
+                <div>
+                  <h2>Recent Transactions</h2>
+                  <p>Your latest activity.</p>
+                </div>
+                <button class="text-btn" data-section-target="transactions">See all</button>
+              </div>
+              <div id="recentTransactions" class="transaction-list"></div>
+            </article>
+
+            <article class="panel chart-panel">
+              <div class="panel-header">
+                <div>
+                  <h2>Expenses by Category</h2>
+                  <p>This is based on your saved transactions.</p>
+                </div>
+              </div>
+              <div class="chart-wrap">
+                <canvas id="expenseChart"></canvas>
+                <div class="chart-empty" id="chartEmpty">Add expenses to see your chart.</div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <!-- TRANSACTIONS -->
+        <section class="page-section" id="transactions">
+          <div class="section-heading">
+            <div>
+              <h1>Transactions</h1>
+              <p>Search, filter, sort and manage every transaction.</p>
+            </div>
+            <button class="primary-btn" id="transactionsAddBtn">＋ Add Transaction</button>
+          </div>
+
+          <article class="panel">
+            <div class="toolbar">
+              <div class="search-box">
+                <span>⌕</span>
+                <input id="searchInput" type="search" placeholder="Search transactions...">
+              </div>
+              <select id="filterSelect">
+                <option value="all">All types</option>
+                <option value="income">Income</option>
+                <option value="expense">Expense</option>
+              </select>
+              <select id="categoryFilter">
+                <option value="all">All categories</option>
+              </select>
+              <select id="sortSelect">
+                <option value="newest">Newest</option>
+                <option value="oldest">Oldest</option>
+                <option value="high">Highest amount</option>
+                <option value="low">Lowest amount</option>
+              </select>
+            </div>
+            <div id="allTransactions" class="transaction-list large-list"></div>
+            <div class="empty-state hidden" id="emptyState">
+              <div>🧾</div>
+              <h3>No transactions found</h3>
+              <p>Try another search/filter or add a new transaction.</p>
+            </div>
+          </article>
+        </section>
+
+        <!-- BUDGET -->
+        <section class="page-section" id="budget">
+          <div class="section-heading">
+            <div>
+              <h1>Monthly Budget</h1>
+              <p>Set a spending limit and keep an eye on your progress.</p>
+            </div>
+          </div>
+
+          <div class="two-column">
+            <article class="panel">
+              <div class="panel-header">
+                <div>
+                  <h2>Set Budget</h2>
+                  <p>Your budget is saved in this browser.</p>
+                </div>
+              </div>
+              <form id="budgetForm">
+                <div class="form-group">
+                  <label for="budgetInput">Monthly budget (₹)</label>
+                  <input id="budgetInput" type="number" min="0" step="100" placeholder="e.g. 20000" required>
+                </div>
+                <button class="primary-btn" type="submit">Save Budget</button>
+              </form>
+            </article>
+
+            <article class="panel budget-overview">
+              <div class="budget-big" id="budgetOverviewValue">₹0</div>
+              <p>Monthly budget</p>
+              <div class="big-progress-track"><div class="progress-fill" id="bigBudgetProgress"></div></div>
+              <div class="budget-numbers">
+                <span><strong id="budgetSpent">₹0</strong> spent</span>
+                <span><strong id="budgetRemaining">₹0</strong> remaining</span>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <!-- CONVERTER -->
+        <section class="page-section" id="converter">
+          <div class="section-heading">
+            <div>
+              <h1>Currency Converter</h1>
+              <p>Uses live exchange-rate data from the Frankfurter API.</p>
+            </div>
+          </div>
+
+          <article class="panel converter-panel">
+            <form id="converterForm" class="converter-form">
+              <div class="form-group">
+                <label for="convertAmount">Amount</label>
+                <input id="convertAmount" type="number" min="0" step="0.01" value="1000" required>
+              </div>
+              <div class="form-group">
+                <label for="fromCurrency">From</label>
+                <select id="fromCurrency">
+                  <option>INR</option>
+                  <option>USD</option>
+                  <option>EUR</option>
+                  <option>GBP</option>
+                  <option>JPY</option>
+                  <option>AED</option>
+                </select>
+              </div>
+              <div class="swap-area">
+                <button class="icon-btn" type="button" id="swapCurrencyBtn" title="Swap currencies">⇄</button>
+              </div>
+              <div class="form-group">
+                <label for="toCurrency">To</label>
+                <select id="toCurrency">
+                  <option>USD</option>
+                  <option>INR</option>
+                  <option>EUR</option>
+                  <option>GBP</option>
+                  <option>JPY</option>
+                  <option>AED</option>
+                </select>
+              </div>
+              <button class="primary-btn converter-submit" type="submit">Convert</button>
+            </form>
+
+            <div class="conversion-result" id="conversionResult">
+              <span>Result</span>
+              <strong>—</strong>
+              <small>Enter an amount and click Convert.</small>
+            </div>
+            <p class="api-status" id="apiStatus"></p>
+          </article>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- Delete modal -->
+  <dialog id="deleteDialog" class="modal">
+    <div class="modal-content">
+      <button class="modal-close" id="closeDialogBtn" aria-label="Close">×</button>
+      <div class="modal-icon">🗑️</div>
+      <h2>Delete transaction?</h2>
+      <p>This action cannot be undone.</p>
+      <div class="modal-actions">
+        <button class="secondary-btn" id="cancelDeleteBtn">Cancel</button>
+        <button class="danger-btn" id="confirmDeleteBtn">Delete</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
